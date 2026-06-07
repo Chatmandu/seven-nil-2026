@@ -38,6 +38,17 @@ blog never touches it.
    - Build command: `npm run build`
    - Build output directory: `dist`
 4. Deploy. You'll get a URL like `https://seven-nil-2026.pages.dev`.
+
+> **Build requirements (important).** Cloudflare's current builder requires
+> **Vite 6+** — this project is pinned to Vite 6, so it builds clean. If you
+> ever see *"The version of Vite ... cannot be automatically configured.
+> Please update to at least 6.0.0"*, that means an older Vite crept back into
+> `package.json`; keep `vite` at `^6.0.0`.
+>
+> If the build command shows as `bun run build` and a stale `bun.lockb`
+> causes trouble, either let it use bun (it's fine — there's no lockfile in
+> this repo so it resolves fresh) or set the build command explicitly to
+> `npm run build` in the project settings.
    The game already expects to live under `/seven-nil/`, so on the raw
    pages.dev domain assets resolve at `seven-nil-2026.pages.dev/seven-nil/`.
    That's expected — the real home is the route below.
