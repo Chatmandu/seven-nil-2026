@@ -1,0 +1,9 @@
+/seven-nil/assets/*
+  Cache-Control: public, max-age=31536000, immutable
+
+/seven-nil/og-image.png
+  Cache-Control: public, max-age=3600
+
+/seven-nil/*
+  X-Content-Type-Options: nosniff
+  Referrer-Policy: strict-origin-when-cross-origin
