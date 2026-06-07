@@ -1,0 +1,8 @@
+# Cloudflare Workers Assets — Vite SPA served at the root of seven-nil.manualmode.xyz
+name = "seven-nil-2026"
+compatibility_date = "2025-01-01"
+
+[assets]
+directory = "./dist"
+# SPA fallback: unmatched routes serve index.html.
+not_found_handling = "single-page-application"
