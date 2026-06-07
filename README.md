@@ -55,42 +55,30 @@ blog never touches it.
 
 ### Step 2 — Route manualmode.xyz/seven-nil to it
 
-**Option A — Pages custom domain + redirect rule (simplest).**
-Because manualmode.xyz already serves your blog, add the game's Pages project
-to the same zone and use a redirect/rewrite rule:
+The build outputs to `dist/seven-nil/` so the file paths physically match the
+URL. That means the app works correctly **both** on the raw
+`seven-nil-2026.pages.dev/seven-nil/` URL and behind your domain — no path
+rewriting required, which keeps Open Graph previews accurate.
 
-1. In the **manualmode.xyz** zone → Rules → **Redirect Rules** (or
-   **Configuration Rules**), create a rule:
-   - When incoming requests match: URI Path **starts with** `/seven-nil`
-   - Then: **rewrite** to the Pages deployment.
-   For a true rewrite (URL stays as manualmode.xyz/seven-nil), the cleanest
-   route is a **Worker** (Option B). A plain redirect rule pointing
-   `/seven-nil*` → `https://seven-nil-2026.pages.dev/seven-nil$1` works too,
-   but the address bar will show the pages.dev URL.
-
-**Option B — tiny Worker route (keeps the manualmode.xyz URL, best for SEO).**
+**Option A — Worker route (keeps the manualmode.xyz URL, best for SEO).**
 1. Workers & Pages → Create Worker. Paste:
    ```js
    export default {
      async fetch(request) {
        const url = new URL(request.url);
-       // proxy /seven-nil/* to the Pages deployment, keeping the path
+       // pass the path straight through; structure already matches
        const target = "https://seven-nil-2026.pages.dev" + url.pathname + url.search;
        return fetch(target, request);
      }
    };
    ```
-2. In the manualmode.xyz zone → Workers Routes, add route:
-   `manualmode.xyz/seven-nil*` → this Worker.
-   Now the game is served at manualmode.xyz/seven-nil with the URL intact and
-   the Open Graph tags (which point at manualmode.xyz/seven-nil) resolve
-   correctly for link previews.
+2. manualmode.xyz zone → Workers Routes → add `manualmode.xyz/seven-nil*`
+   pointing at this Worker.
 
-**Option C — subdomain instead (zero routing fuss).**
-If a path turns out fiddly, point a subdomain at the Pages project, e.g.
-`seven-nil.manualmode.xyz`. Then change the four URLs below from
-`manualmode.xyz/seven-nil` to `seven-nil.manualmode.xyz`, set Vite `base`
-back to `/`, and redeploy. Simpler, just a different address shape.
+**Option B — subdomain (simplest of all).**
+Point `seven-nil.manualmode.xyz` at the Pages project as a custom domain. If
+you go this route, the subpath is optional: it still works as-is, or you can
+set Vite `base` back to `/` and remove the nested `outDir` for clean root URLs.
 
 ---
 
@@ -114,18 +102,21 @@ Paste https://manualmode.xyz/seven-nil/ and force a re-scrape.
 ## What's where
 ```
 index.html            SEO + OG + Twitter + JSON-LD (subpath URLs baked in)
-vite.config.js        base: "/seven-nil/"
+vite.config.js        base "/seven-nil/" + outDir "dist/seven-nil"
+wrangler.toml         Workers Assets config + SPA fallback
+postbuild.mjs         lifts _headers to the dist root for Cloudflare
 public/
   og-image.png        1200×630 link-preview card
   icon-512/192, favicon-32
   site.webmanifest    PWA, scoped to /seven-nil/
   robots.txt, sitemap.xml
-  _redirects          Cloudflare SPA fallback for /seven-nil/*
   _headers            caching + security headers
 src/
   App.jsx             the whole game (data + engine + UI)
   main.jsx            React entry
 ```
+Build output: `dist/seven-nil/` (the app) plus `dist/_headers` (lifted to root).
+Cloudflare serves `dist/` as the asset root, so `/seven-nil/...` resolves directly.
 
 ## Notes
 - The in-app **Share image** button makes a personal result card on the fly;
